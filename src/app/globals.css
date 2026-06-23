@@ -1,26 +1,248 @@
 @import "tailwindcss";
 
+/* ============================================================
+   音乐剧 Studio — 剧场主题
+   暗色 + 暖光 + 帷幕 · 欧式古典稳重
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* 背景 */
+  --bg-curtain: #0f0d13;
+  --bg-panel: #1a1520;
+  --bg-card: #221d2a;
+  --bg-card-hover: #2a2435;
+
+  /* 暖金系 */
+  --gold: #c9a96e;
+  --gold-dim: #a08550;
+  --amber: #d4a574;
+
+  /* 轨道色 */
+  --track-event: #8b2252;
+  --track-character: #6a3d7d;
+  --track-scene: #2d6a6a;
+  --track-music: #b8860b;
+
+  /* 语义色 */
+  --text-primary: #f5f0e8;
+  --text-secondary: #a09888;
+  --text-muted: #6b6060;
+  --color-confirm: #2d8b57;
+  --color-conflict: #dc3545;
+  --color-warning: #e6a817;
+  --color-draft: #4a90d9;
+
+  /* shadcn 变量覆盖 */
+  --background: #0f0d13;
+  --foreground: #f5f0e8;
+  --card: #1a1520;
+  --card-foreground: #f5f0e8;
+  --popover: #1a1520;
+  --popover-foreground: #f5f0e8;
+  --primary: #c9a96e;
+  --primary-foreground: #0f0d13;
+  --secondary: #221d2a;
+  --secondary-foreground: #f5f0e8;
+  --muted: #2a2435;
+  --muted-foreground: #a09888;
+  --accent: #2a2435;
+  --accent-foreground: #f5f0e8;
+  --destructive: #dc3545;
+  --destructive-foreground: #f5f0e8;
+  --border: #3a3345;
+  --input: #3a3345;
+  --ring: #c9a96e;
+  --radius: 0.5rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-gold: var(--gold);
+  --color-gold-dim: var(--gold-dim);
+  --color-amber: var(--amber);
+  --color-track-event: var(--track-event);
+  --color-track-character: var(--track-character);
+  --color-track-scene: var(--track-scene);
+  --color-track-music: var(--track-music);
+  --color-confirm: var(--color-confirm);
+  --color-conflict: var(--color-conflict);
+  --color-warning: var(--color-warning);
+  --color-draft: var(--color-draft);
+
+  --font-sans: var(--font-kaiti), "KaiTi", "STKaiti", "楷体", serif;
+  --font-display: "Playfair Display", var(--font-kaiti), serif;
+  --font-mono: var(--font-geist-mono), monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* 全局 */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-curtain);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
 }
+
+/* 帷幕纹理 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(201, 169, 110, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(139, 34, 82, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 100%, rgba(106, 61, 125, 0.04) 0%, transparent 50%);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gold-dim);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+/* 卡片基座样式 */
+.card-theater {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+.card-theater:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 20px rgba(201, 169, 110, 0.08);
+}
+
+/* 状态着色 */
+.status-draft { border-color: var(--color-draft); }
+.status-confirmed { border-color: var(--color-confirm); }
+.status-changed { border-color: var(--color-warning); }
+.status-conflict { border-color: var(--color-conflict); animation: pulse-conflict 1.5s infinite; }
+.status-disabled { opacity: 0.4; }
+
+@keyframes pulse-conflict {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.3); }
+  50% { box-shadow: 0 0 12px 4px rgba(220, 53, 69, 0.15); }
+}
+
+/* 发光边框 */
+.glow-gold {
+  box-shadow: 0 0 15px rgba(201, 169, 110, 0.3), inset 0 0 15px rgba(201, 169, 110, 0.05);
+}
+
+/* 五线谱装饰线 */
+.staff-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 18px,
+    rgba(201, 169, 110, 0.08) 18px,
+    rgba(201, 169, 110, 0.08) 19px
+  );
+}
+
+/* 小节线 */
+.bar-line {
+  border-left: 2px solid rgba(201, 169, 110, 0.2);
+}
+
+/* 选中高亮 */
+.node-selected {
+  box-shadow: 0 0 20px rgba(201, 169, 110, 0.4);
+  border-color: var(--gold) !important;
+}
+
+/* 冲突震动 */
+@keyframes conflict-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-5px); }
+  30% { transform: translateX(5px); }
+  45% { transform: translateX(-4px); }
+  60% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+  90% { transform: translateX(2px); }
+}
+.conflict-shake {
+  animation: conflict-shake 0.6s ease-in-out;
+  border-color: var(--color-conflict) !important;
+  box-shadow: 0 0 16px rgba(220, 53, 69, 0.4) !important;
+}
+
+/* 焦点样式 */
+*:focus-visible {
+  outline: 2px solid var(--gold-dim);
+  outline-offset: 2px;
+}
+
+/* 平滑滚动 */
+html { scroll-behavior: smooth; }
+
+/* 选区颜色 */
+::selection {
+  background: rgba(201, 169, 110, 0.3);
+  color: var(--text-primary);
+}
+
+/* 打印样式 */
+@media print {
+  body { background: white !important; color: black !important; }
+  [data-no-print], header, footer { display: none !important; }
+  @page { margin: 2cm; }
+}
+
+/* 图标 loading 动画 */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin-slow { animation: spin-slow 2s linear infinite; }
+
+/* 呼吸光圈（card 等待确认） */
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,169,110,0.3); }
+  50%       { box-shadow: 0 0 12px 3px rgba(201,169,110,0.12); }
+}
+.card-breathe { animation: breathe 2.5s ease-in-out infinite; }
+
+/* 帷幕打开后的舞台感 */
+.stage-ready {
+  box-shadow: inset 0 0 80px rgba(201,169,110,0.02);
+}
+
+/* 响应式最小宽度保障 */
+@media (max-width: 1024px) {
+  .timeline-track-head { min-width: 90px !important; }
+}
+
+/* 内容区不超出视口 */
+.studio-content { max-height: 100vh; overflow: hidden; }
