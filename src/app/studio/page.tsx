@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { StudioShell } from "@/components/layout/StudioShell";
 import { LeftPanel } from "@/components/layout/LeftPanel";
 import { TimelineScore } from "@/components/timeline/TimelineScore";
-import { CopilotPanel } from "@/components/copilot/CopilotPanel";
+import { ScriptEditorPanel } from "@/components/editor/ScriptEditorPanel";
+import { CreativeAssistantPanel } from "@/components/copilot/CreativeAssistantPanel";
 import { useProjectStore } from "@/lib/store/projectStore";
 import { useUIStore } from "@/lib/store/uiStore";
 import { useSettingsStore } from "@/lib/store/settingsStore";
@@ -432,8 +433,9 @@ export default function StudioPage() {
     <>
       <StudioShell
         leftPanel={<LeftPanel />}
-        centerPanel={<CenterPanel />}
-        rightPanel={<CopilotPanel />}
+        editorPanel={<ScriptEditorPanel />}
+        timelinePanel={<CenterPanel />}
+        rightPanel={<CreativeAssistantPanel />}
         bottomBar={<BottomBar />}
         toolbarExtra={<ToolbarExtra />}
       />
