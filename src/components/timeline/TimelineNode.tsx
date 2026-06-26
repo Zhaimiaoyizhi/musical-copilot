@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { motion } from "motion/react"
-import { Music2, Users, MapPin, Zap, Check, X } from "lucide-react"
+import { Music2, Users, MapPin, Zap, Check, X, Upload, Play, Pause, Trash2 } from "lucide-react"
 import type { TrackType, AssetStatus } from "@/types/project"
+import { useAudioStore } from "@/lib/store/audioStore"
 
 export const COLUMN_WIDTH = 224
 export const NODE_WIDTH   = 208
@@ -48,7 +49,7 @@ interface TimelineNodeProps {
 }
 
 export function TimelineNode({
-  id, title, summary, trackType, status = "confirmed",
+  id, eventId, title, summary, trackType, status = "confirmed",
   highlight = "normal",
   conflictLevel, musicType, index = 0, isDragging = false,
   onClick, onUpdate,
@@ -60,7 +61,60 @@ export function TimelineNode({
   const [editing,     setEditing]     = useState(false)
   const [editTitle,   setEditTitle]   = useState(title)
   const [editSummary, setEditSummary] = useState(summary)
-  const titleRef = useRef<HTMLInputElement>(null)
+  const titleRef    = useRef<HTMLInputElement>(null)
+
+  // ── 音频播放状态 ─────────────────────────────────────────────
+  const audioRef     = useRef<HTMLAudioElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [progress,  setProgress]  = useState(0)
+
+  const { audioFiles, setAudioFile, clearAudioFile } = useAudioStore()
+  const audioUrl = trackType === "music" ? audioFiles[eventId] : undefined
+
+  // 切换 src 时重置播放状态
+  useEffect(() => {
+    setIsPlaying(false)
+    setProgress(0)
+  }, [audioUrl])
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    setAudioFile(eventId, url)
+    // 清空 input 值，允许重复选同一文件
+    e.target.value = ""
+  }, [eventId, setAudioFile])
+
+  const togglePlay = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    const audio = audioRef.current
+    if (!audio) return
+    if (isPlaying) { audio.pause(); setIsPlaying(false) }
+    else           { audio.play().catch(() => {}); setIsPlaying(true) }
+  }, [isPlaying])
+
+  const handleTimeUpdate = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio || !audio.duration) return
+    setProgress((audio.currentTime / audio.duration) * 100)
+  }, [])
+
+  const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation()
+    const audio = audioRef.current
+    if (!audio || !audio.duration) return
+    audio.currentTime = (Number(e.target.value) / 100) * audio.duration
+    setProgress(Number(e.target.value))
+  }, [])
+
+  const handleClear = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    audioRef.current?.pause()
+    setIsPlaying(false)
+    clearAudioFile(eventId)
+  }, [eventId, clearAudioFile])
 
   useEffect(() => { setEditTitle(title) },   [title])
   useEffect(() => { setEditSummary(summary) }, [summary])
@@ -185,7 +239,8 @@ export function TimelineNode({
           </div>
         ) : (
           /* ── 展示模式 ─── */
-          <div className="p-3 h-full flex flex-col justify-center gap-2">
+          <div className="p-3 h-full flex flex-col gap-1.5"
+            style={{ justifyContent: trackType === "music" ? "space-between" : "center" }}>
             <div className="flex items-center gap-1.5">
               <div className="flex items-center justify-center w-6 h-6 rounded-md shrink-0"
                 style={{ background: tc.base + "25", border: `1px solid ${tc.base}44` }}>
@@ -213,13 +268,68 @@ export function TimelineNode({
               </span>
             </div>
 
-            <p className="text-sm font-semibold leading-snug line-clamp-2" style={{ color: titleColor }}>
+            <p className="text-sm font-semibold leading-snug line-clamp-1" style={{ color: titleColor }}>
               {title}
             </p>
 
-            <p className="text-xs leading-relaxed line-clamp-3" style={{ color: "var(--text-muted)" }}>
+            <p className={`text-xs leading-relaxed ${trackType === "music" ? "line-clamp-1" : "line-clamp-3"}`}
+              style={{ color: "var(--text-muted)" }}>
               {summary}
             </p>
+
+            {/* ── 音乐轨：音频控制区 ── */}
+            {trackType === "music" && (
+              <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                {audioUrl ? (
+                  <>
+                    <audio
+                      ref={audioRef}
+                      src={audioUrl}
+                      onTimeUpdate={handleTimeUpdate}
+                      onEnded={() => setIsPlaying(false)}
+                    />
+                    <button
+                      onClick={togglePlay}
+                      className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full transition-opacity hover:opacity-100 opacity-90"
+                      style={{ background: tc.base + "40", border: `1px solid ${tc.base}80` }}
+                    >
+                      {isPlaying
+                        ? <Pause size={8} style={{ color: tc.text }} />
+                        : <Play  size={8} style={{ color: tc.text, marginLeft: 1 }} />
+                      }
+                    </button>
+                    <input
+                      type="range" min={0} max={100} value={progress}
+                      onChange={handleSeek}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-1 h-0.5 cursor-pointer appearance-none rounded-full"
+                      style={{ accentColor: tc.base }}
+                    />
+                    <button onClick={handleClear} className="flex-shrink-0 opacity-40 hover:opacity-80 transition-opacity">
+                      <Trash2 size={9} style={{ color: "var(--text-muted)" }} />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="audio/*"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-md opacity-50 hover:opacity-90 transition-opacity"
+                      style={{ border: `1px dashed ${tc.base}70`, color: tc.text }}
+                    >
+                      <Upload size={8} />
+                      上传音乐
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 
