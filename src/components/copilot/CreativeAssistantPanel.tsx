@@ -117,7 +117,7 @@ export function CreativeAssistantPanel() {
   const buildSystemPrompt = useCallback(() => {
     const base = "你是一位资深音乐剧创作顾问，擅长大纲构建、剧情调试与人物塑造。请用中文回答，语言简洁有力，结合具体场景和台词给出可操作的建议。";
     if (!project) return base;
-    return `${base}\n\n当前项目：《${project.title}》\n简介：${project.synopsis ?? "暂无"}\n共 ${project.timelineEvents?.length ?? 0} 个场景节点。`;
+    return `${base}\n\n当前项目：《${project.title}》\n故事背景：${project.storyInput ? project.storyInput.slice(0, 200) : "暂无"}\n共 ${project.timelineEvents?.length ?? 0} 个场景节点。`;
   }, [project]);
 
   const sendMessage = useCallback(async (text: string) => {
